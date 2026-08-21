@@ -15,15 +15,15 @@ namespace NORTHWINDMVC.Models
 using System;
     using System.Collections.Generic;
     
-public partial class Logins
+public partial class Product_Sales_for_1997
 {
 
-    public int LoginId { get; set; }
+    public string CategoryName { get; set; }
 
-    public string UserName { get; set; }
+    public string ProductName { get; set; }
 
-    public string PassWord { get; set; }
-        public string LoginErrorMessage { get; internal set; }
-    }
+    public Nullable<decimal> ProductSales { get; set; }
+
+}
 
 }

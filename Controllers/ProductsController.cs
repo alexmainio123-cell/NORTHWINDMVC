@@ -7,6 +7,8 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using NORTHWINDMVC.Models;
+using PagedList;
+using NORTHWINDMVC.Viewmodels;
 
 namespace NORTHWINDMVC.Controllers
 {
@@ -15,28 +17,159 @@ namespace NORTHWINDMVC.Controllers
         private NorthwindOriginalEntities db = new NorthwindOriginalEntities();
 
         // GET: Products
-        public ActionResult Index()
+        public ActionResult Index(string searchString, string sortOrder, int? page, int? pageSize, string productCategory)
         {
-            if (Session["UserName"] == null)
-            {
-                ViewBag.LoggedStatus = "Out";
+            //if (Session["UserName"] == null)
+            //{
+            //    ViewBag.LoggedStatus = "Out";
 
-                return RedirectToAction("Login");
+            //    return RedirectToAction("Login");
 
               
-            }
-            else
-            {
-                var products = db.Products.Include(p => p.Categories).Include(p => p.Suppliers);
-                ViewBag.LoggedStatus = "In";
+            //}
+            //else
+            //{
+            //    var products = db.Products.Include(p => p.Categories).Include(p => p.Suppliers);
+            //    ViewBag.LoggedStatus = "In";
                 
-                return View(products.ToList());
+            //    return View(products.ToList());
+            //}
+            
+
+        
+
+            var products = db.Products.Include(p => p.Categories).Include(p => p.Suppliers).AsQueryable();
+
+
+            var model = new ProductIndexViewModel
+            {
+
+                SearchString = searchString,
+
+                SortOrder = sortOrder,
+
+                ProductCategory = productCategory,
+
+                PageNumber = page ?? 1,
+
+                PageSize = pageSize ?? 10
+
+            };
+
+
+            //Tekstihaku
+            if (!string.IsNullOrEmpty(model.SearchString))
+
+            {
+
+                products = products.Where(p =>
+                    p.ProductName.Contains(model.SearchString) ||
+
+                    p.Suppliers.CompanyName.Contains(model.SearchString) ||
+
+                    p.Categories.CategoryName.Contains(model.SearchString));
+
             }
 
+
+            //Kategoriafiltteri
+            if (!string.IsNullOrEmpty(model.ProductCategory) && model.ProductCategory != "0")
+
+            {
+
+                int catId = int.Parse(model.ProductCategory);
+
+                products = products.Where(p => p.CategoryID == catId);
+
+            }
+
+
+            if (model.SortByNameDesc)
+
+            {
+
+                products = products.OrderByDescending(p => p.ProductName);
+
+            }
+
+            else if (model.SortByPrice)
+
+            {
+
+                products = products.OrderBy(p => p.UnitPrice);
+
+            }
+
+            else if (model.SortByPriceDesc)
+
+            {
+
+                products = products.OrderByDescending(p => p.UnitPrice);
+
+            }
+
+            else
+            {
+
+                products = products.OrderBy(p => p.ProductName);
+
+            }
+
+
+            #region//Pudotusvalikko haettavien tietojen suodatuksessa
+
+            List<Categories> lstCategories = new List<Categories>();
+
+
+            //Tuotekategorioiden haku tietokannasta
+            var categoryList = from cat in db.Categories
+
+            select cat;
+
+
+            //Luetteloon viedään ensin yksi tyhjä rivi
+            Categories tyhjaCategory = new Categories();
+
+            tyhjaCategory.CategoryID = 0;
+
+            tyhjaCategory.CategoryName = "";
+
+            tyhjaCategory.CategoryIDCategoryName = "";
+
+            lstCategories.Add(tyhjaCategory);
+
+
+            //Tietokannasta haetut rivit käsitellään silmukassa ja arvot viedään muuttujiin.
+            //Luodaan yhdistelmämuuttuja, jossa on sekä avaintieto että sen selitys samassa muuttujassa
+            foreach (Categories category in categoryList)
+
+            {
+
+                Categories yksiCategory = new Categories();
+
+                yksiCategory.CategoryID = category.CategoryID;
+
+                yksiCategory.CategoryName = category.CategoryName;
+
+                //Taulun luokkamääritykseen Models - kansiossa lisätään "uusi" kenttä = CategoryIDCategoryName
+                yksiCategory.CategoryIDCategoryName = category.CategoryID.ToString() + " - " + category.CategoryName;
+
+                lstCategories.Add(yksiCategory);
+
+            }
+
+            //Lopuksi luodaan uusi SelectList ja se sijoitetaan ViewBag olioon//tätä käytetään View:n puolella pudotusvalikon luettelon muodostuksessa.     ViewBag.CategoryID = new SelectList(lstCategories, "CategoryID", "CategoryIDCategoryName", productCategory);
+
+            #endregion 
+            model.Products = products.ToPagedList(model.PageNumber == 0 ? 1 : model.PageNumber, model.PageSize == 0 ? 10 : model.PageSize);
+
+            return View(model);
+
+        }
 
                 
             
-        }
+        
 
         
         
