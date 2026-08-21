@@ -40,7 +40,7 @@ public partial class Categories
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
 
     public virtual ICollection<Products> Products { get; set; }
-
-}
+        public string CategoryIDCategoryName { get; internal set; }
+    }
 
 }

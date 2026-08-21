@@ -1,0 +1,71 @@
+﻿
+@{
+    ViewBag.Title = "CategorySales";
+}
+
+@section scripts {
+    <script>
+            var labelTexts = @Html.Raw(ViewBag.categoryName);
+            var dataValues = @Html.Raw(ViewBag.categorySales);
+            //console.log(labelTexts);
+            //console.log(dataValues);
+            var ctx = document.getElementById('barcanvas').getContext('2d');
+
+            var barcanvas = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labelTexts,
+                    datasets: [{
+                        label: 'Sales in money per category at 1997',
+                        data: dataValues,
+                        backgroundColor: labelTexts.map((_, i) => `rgba(${i * 25 % 255}, ${(i * 50) % 255}, ${(i * 75) % 255}, 0.6)`),
+                        borderColor: labelTexts.map((_, i) => `rgba(${i * 25 % 255}, ${(i * 50) % 255}, ${(i * 75) % 255}, 1)`),
+
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+    </script>
+}
+
+<style>
+    .chart-box {
+        position: relative;
+        height: 300px;
+    }
+
+        .chart-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+</style>
+
+
+<div class="mt-4">
+    <h2>CategorySales in 1997</h2>
+
+    <div class="card mt-5">
+        <div class="card-header bg-secondary text-white">Kategoria myynnit</div>
+        <div class="card-body chart-box">
+            <canvas id="barcanvas"></canvas>
+        </div>
+    </div>
+    <div style="text-align: center">
+        Tiedot on haettu Northwind tietokannasta.
+    </div>
+</div>
+
+
+
+

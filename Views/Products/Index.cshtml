@@ -1,81 +1,109 @@
-﻿@model IEnumerable<NORTHWINDMVC.Models.Products>
+﻿@model PagedList.IPagedList<NORTHWINDMVC.Viewmodels.ProductIndexViewModel>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+
 
 @{
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
+<h2>Products</h2>
 
 <p>
     @Html.ActionLink("Create New", "Create")
 </p>
+
+<!--Html.BeginForm luo www-sivulle lomakkeen, jolle on määritelty input tyyppinen button, joka tekee Form Submitin-->
+@using (Html.BeginForm("Index", "Product", FormMethod.Get))
+{
+    <div class="input-group">
+        <!--1.pv Tietojen suodattaminen taulukkonäkymässä, ks. Controller muutokset-->
+        <p class="px-1">@Html.Label("Find by ProductName/CompanyName:")</p>
+        <p class="px-1">@Html.TextBoxFor(m => m.SearchString, new { @class = "form-control" })</p>
+        <!--1.pv - video 15: Pudotusvalikosta (DropDownList) valitun tuoteryhmän avaintieto-->
+        <p class="px-1">@Html.Label("Find by Product Category:")</p>
+        <!--CategoryID parametri viittaa ViewBagin SelectList-->
+        <p class="px-1">@Html.DropDownListFor(m => m.ProductCategory, (SelectList)ViewBag.CategoryID, new { @class = "form-control" })</p>
+        <p class="px-1"><input type="submit" value="Search" class="form-control" /></p>
+    </div>
+}
+
+
+
+
+
 <table class="table">
     <tr>
+        <th></th>
+        <th>Photo</th>
+        <th>ImageLink</th>
+
+        <!--Linkkien muokkaus, ks. controller (2/1)-->
         <th>
-            @Html.DisplayNameFor(model => model.ProductName)
+            @Html.ActionLink("Tuotenimi", "Index", new { sortOrder = Model.ProductNameSort, searchString = Model.SearchString, productCategory = Model.ProductCategory })
+
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.QuantityPerUnit)
+            @Html.ActionLink("A-hinta", "Index", new { sortOrder = Model.UnitPriceSort, searchString = Model.SearchString, productCategory = Model.ProductCategory })
+
         </th>
-        <th>
-            @Html.DisplayNameFor(model => model.UnitPrice)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.UnitsInStock)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.UnitsOnOrder)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ReorderLevel)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Discontinued)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Categories.CategoryName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Suppliers.CompanyName)
-        </th>
+
+        <th>QuantityPerUnit</th>
+        <th>UnitsInStock</th>
+        <th>UnitsOnOrder</th>
+        <th>ReorderLevel</th>
+        <th>Discontinued</th>
+        <th>CategoryName</th>
+        <th>Suppliers CompanyName</th>
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.ProductName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.QuantityPerUnit)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UnitPrice)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UnitsInStock)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UnitsOnOrder)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ReorderLevel)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Discontinued)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Categories.CategoryName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Suppliers.CompanyName)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ProductID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ProductID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ProductID })
-        </td>
-    </tr>
-}
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProductName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.QuantityPerUnit)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UnitPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UnitsInStock)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UnitsOnOrder)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReorderLevel)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Discontinued)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Categories.CategoryName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Suppliers.CompanyName)
+            </td>
+            <td>
+                <a class="btn btn-outline-secondary mb-1" href="~/Product/Edit/@item.ProductID"><i class="bi bi-pencil-square"></i></a>
+                <a class="btn btn-outline-secondary mb-1" href="~/Product/Details/@item.ProductID"><i class="bi bi-info-square"></i></a>
+                <a class="btn btn-outline-secondary mb-1" href="~/Product/Delete/@item.ProductID"><i class="bi bi-x-square"></i></a>
+
+
+
+            </td>
+        </tr>
+    }
 
 </table>
+<br />
+<!--Sivuttaminen: 1.pv - video 13-->
+Page @(Model.Products.PageCount < Model.Products.PageNumber ? 0: Model.Products.PageNumber) of @Model.Products.PageCount
+
+
+@Html.PagedListPager(Model.Products, page => Url.Action("Index", new { page, sortOrder = Model.SortOrder, searchString = Model.SearchString, productCategory = Model.ProductCategory }))

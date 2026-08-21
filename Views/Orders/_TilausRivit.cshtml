@@ -1,0 +1,67 @@
+﻿@model IEnumerable<NORTHWINDMVC.Viewmodels.OrderRows>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ProductName)
+
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UnitPrice)
+
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Quantity)
+
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Discount)
+
+            </th>
+            <th>
+                Totalsum
+
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CategoryName)
+
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+
+        {
+
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProductName)
+
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UnitPrice, "{0:0.00}")
+
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Quantity)
+
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Discount)
+
+                </td>
+                <td>
+                    <!--Lisätty summakenttä ja muokattu hinta kahteen desimaaliin-->
+                    @{var totalsum = item.UnitPrice * item.Quantity; }@totalsum.ToString("0.00")
+
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CategoryName)
+
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>

@@ -1,0 +1,158 @@
+﻿@model IEnumerable<NORTHWINDMVC.Models.Orders>
+@{
+    ViewBag.Title = "TilausOtsikotJS";
+}
+
+@section scripts {
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const accordion = document.getElementById("accordion");
+
+            accordion.addEventListener("shown.bs.collapse", function (event) {
+
+                const collapseElement = event.target; // avattu collapse
+
+                const orderId = collapseElement.id.replace("collapse_", "");
+
+                const detailDiv = document.getElementById("orderDetails_" + orderId);
+
+                // Estetään uudelleenlataus jos jo ladattu
+
+                if (detailDiv.dataset.loaded === "true") return;
+
+                detailDiv.innerHTML = "<b>Loading order " + orderId + " rows...</b>";
+
+                fetch("/Orders/_TilausRivit?orderid=" + orderId)
+
+                    .then(response => {
+
+                        if (!response.ok) {
+
+                            throw new Error("Network response was not ok");
+
+                        }
+
+                        return response.text();
+
+                    })
+
+                    .then(html => {
+
+                        detailDiv.innerHTML = html;
+
+                        detailDiv.dataset.loaded = "true";
+
+                    })
+
+                    .catch(error => {
+
+                        detailDiv.innerHTML = "<span class='text-danger'>Error loading data</span>";
+
+                        console.error(error);
+
+                    });
+
+            });
+
+        });
+    </script>
+
+}
+
+
+<h2>TilausOtsikotJS</h2>
+
+
+<p>
+    <a href="~/Orders/Create" class="btn btn-outline-success card-link creNewOrder"><i class="bi bi-plus"></i> Create a New Order</a>
+</p>
+
+@using (Html.BeginForm("TilausOtsikotJS", "Orders", FormMethod.Get))
+{
+    <div class="input-group">
+        <div class="input-group">
+            <!--3.pv kotitehtävä-->
+            <p class="px-1">@Html.Label("Find by Customer/ShipCity/ShipCountry/Shipper:")</p>
+            <p class="px-1">@Html.TextBox("SearchString1", ViewBag.currentFilter1 as string, htmlAttributes: new { @class = "form-control" })</p>
+            <!--1.pv-->
+            <p class="px-1"><input type="submit" value="Search" class="form-control" /></p>
+        </div>
+    </div>
+}
+
+<!--//koko selaimen alue käyttöön-->
+
+<div class="container-fluid">
+    <div class="card-header">
+        <a class="card-link text-decoration-none">
+            <form>
+                <div class="input-group">
+                    <div class="input-group-text bg-secondary text-dark font-weight-bold">
+                        <span class="input-group-text text-bg-secondary font-weight-bold">Order</span>
+                    </div>
+
+                    <!--disabled-ominaisuus varmistamaa, että tiettyjä toimintoja tai tietoja ei voi muuttaa vahingossa.-->
+
+                    <input type="text" class="form-control text-bg-secondary font-weight-bold px-2" value="Customer" disabled>
+                    <input type="text" class="form-control text-bg-secondary font-weight-bold px-2" value="ShipAddress" disabled>
+                    <input type="text" class="form-control text-bg-secondary font-weight-bold px-2" value="ShipCity" disabled>
+                    <input type="text" class="form-control text-bg-secondary font-weight-bold px-2" value="ShipCountry" disabled>
+                    <input type="text" class="form-control text-bg-secondary font-weight-bold px-2" value="OrderDate" disabled>
+                    <input type="text" class="form-control text-bg-secondary font-weight-bold px-2" value="ShippedDate" disabled>
+                    <input type="text" class="form-control text-bg-secondary font-weight-bold px-2" value="Shipper" disabled>
+                </div>
+            </form>
+        </a>
+    </div>
+
+    <div id="accordion">
+
+        @foreach (var item in Model)
+        {
+            <div class="card">
+                <div class="card-header">
+                    <a href="@Url.Action("InvoicePdf", "Orders", new { id = item.OrderID })" class="btn btn-sm btn-success" target="_blank">PDF Lasku</a>
+                    <a href="@Url.Action("InvoicePreview", "Orders", new { id = item.OrderID })" class="btn btn-sm btn-success" target="_blank">Preview Invoice</a>
+
+                    <!--Muutos JS linkkiin--><!--item.OrderID: Jokaisesta tilausrivistä luodaan yksilöllinen collapse-id html-dokumentin DOM-rakenteeseen käyttämälä tilausnumeroa id:n osana-->
+                    <a class="card-link" data-bs-toggle="collapse" href="#collapse_@item.OrderID">
+                        <form>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">@item.OrderID</span>
+                                </div>
+                                <input type="text" class="form-control px-2" value="@item.Customers.CompanyName" disabled>
+                                <input type="text" class="form-control px-2" value="@item.ShipAddress" disabled>
+                                <input type="text" class="form-control px-2" value="@item.ShipCity" disabled>
+                                <input type="text" class="form-control px-2" value="@item.ShipCountry" disabled>
+                                <input type="text" class="form-control px-2" value="@(item.OrderDate?.ToString("dd.MM.yyyy"))" disabled />
+                                <input type="text" class="form-control px-2" value="@(item.ShippedDate?.ToString("dd.MM.yyyy"))" disabled />
+                                <input type="text" class="form-control px-2" value="@item.Shippers.CompanyName" disabled>
+                                <div>
+                                </div>
+                            </div>
+                        </form>
+                    </a>
+                </div>
+                <div id="collapse_@item.OrderID" class="collapse" data-bs-parent="#accordion" aria-labelledby="heading_@item.OrderID">
+                    <div class="px-2" style="text-align:right; padding-top:5px">
+                        <a class="card-link" href="@Url.Action("Edit", "Orders", new { id = item.OrderID })" title="Edit Order"><i class="bi bi-pencil text-secondary"></i></a>
+                        @using (Html.BeginForm("Delete", "Orders", new { id = item.OrderID }, FormMethod.Post, new { style = "display:inline;" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="card-link border-0 bg-transparent text-secondary" title="Delete Order" onclick="return confirm('Are you sure you want to delete this order?');"><i class="bi bi-trash"></i></button>
+                        }
+                        <a class="card-link" href="@Url.Action("Create", "OrderDetails", new { orderId = item.OrderID })" title="New Order Row"><i class="bi bi-plus text-secondary"></i></a>
+                    </div>
+                    <div class="card-body">
+                        <div id="orderDetails_@item.OrderID">
+                        </div>
+                    </div>
+                </div>
+            </div>}
+    </div>
+</div>
+
+

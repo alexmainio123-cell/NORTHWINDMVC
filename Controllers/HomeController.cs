@@ -37,7 +37,7 @@ namespace NORTHWINDMVC.Controllers
         {
 
             //Haetaan käyttäjän/Loginin tiedot annetuilla tunnustiedoilla tietokannasta LINQ -kyselyllä
-            var LoggedUser = db.Logins.SingleOrDefault(x => x.UserName == LoginModel.UserName && x.Password == LoginModel.Password);
+            var LoggedUser = db.Logins.SingleOrDefault(x => x.UserName == LoginModel.UserName && x.PassWord == LoginModel.PassWord);
             if (LoggedUser != null)
             {
                 ViewBag.LoginMessage = "Successfull login";

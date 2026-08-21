@@ -38,6 +38,8 @@ public partial class NorthwindOriginalEntities : DbContext
 
     public virtual DbSet<Employees> Employees { get; set; }
 
+    public virtual DbSet<Logins> Logins { get; set; }
+
     public virtual DbSet<Order_Details> Order_Details { get; set; }
 
     public virtual DbSet<Orders> Orders { get; set; }
@@ -52,7 +54,9 @@ public partial class NorthwindOriginalEntities : DbContext
 
     public virtual DbSet<Territories> Territories { get; set; }
 
-    public virtual DbSet<Logins> Logins { get; set; }
+    public virtual DbSet<Category_Sales_for_1997> Category_Sales_for_1997 { get; set; }
+
+    public virtual DbSet<Product_Sales_for_1997> Product_Sales_for_1997 { get; set; }
 
 }
 
